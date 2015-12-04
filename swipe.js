@@ -9,10 +9,6 @@
     'use strict';
 
     $.jCarousel.plugin('jcarouselSwipe', {
-        _started: false,
-        _animated: false,
-        _x: 0,
-        _y: 0,
         _options: {
             target: '+=1',
             event:  'click',
@@ -22,44 +18,91 @@
 
         },
         _create: function() {
-            var self = this;
             this._instance = this.carousel().data('jcarousel');
-            this._element.on('touchstart', function(event) {
-                self._x = event.originalEvent.changedTouches[0].pageX;
-                self._y = event.originalEvent.changedTouches[0].pageY;
-            });
+            this._instance._element.css('touch-action', 'pan-y');
 
-            this._element.on('touchmove', function(event) {
-                var x = event.originalEvent.changedTouches[0].pageX;
-                var y = event.originalEvent.changedTouches[0].pageY;
+            this._initGestures();
+        },
+        _initGestures: function() {
+            var self = this;
+            var startTouch = {};
+            var currentTouch = {};
+            var started = false;
+            var animated = false;
 
-                if (!self._started) {
-                    self._started = true;
-                    self._addClones();
-                    self._currentLeft = self._getListPosition();
+            this._element.on('touchstart.jcarouselSwipe', dragStart);
+
+            function dragStart(event) {
+                event = event.originalEvent || event || window.event;
+                startTouch = getTouches(event);
+
+                self._element.on('touchmove.jcarouselSwipe', dragMove);
+                self._element.on('touchend.jcarouselSwipe touchcancel.jcarouselSwipe', dragEnd);
+            }
+
+            function dragMove(event) {
+                event = event.originalEvent || event || window.event;
+                currentTouch = getTouches(event);
+
+                if (started) {
+                    event.preventDefault();
                 }
 
-                if (!self._animated && Math.abs(self._x - x) > Math.abs(self._y - y)) {
-                    var delta = self._x - x;
+                if (Math.abs(startTouch.y - currentTouch.y) > 10 && !started) {
+                    self._element.off('touchmove.jcarouselSwipe');
+                    return;
+                }
+
+                if (!animated && Math.abs(startTouch.x - currentTouch.x) > 10) {
+                    var delta = startTouch.x - currentTouch.x;
+
+                    if (!started) {
+                        started = true;
+                        self._addClones();
+                        self._currentLeft = self._getListPosition();
+                    }
 
                     self._setListPosition({'left': self._currentLeft - delta + 'px'});
                 }
-            });
+            }
 
-            this._element.on('touchend', function(event) {
-                if (self._started) {
-                    var x = event.originalEvent.changedTouches[0].pageX;
-                    var newTarget = self._getNewTarget(self._x - x > 0);
+            function dragEnd() {
+                if (started) {
+                    var newTarget = self._getNewTarget(startTouch.x - currentTouch.x > 0);
 
                     self._removeClones();
                     self._instance._items = null;
-                    self._animated = true;
+                    animated = true;
                     self._instance.scroll(newTarget.relative, function() {
-                        self._started = false;
-                        self._animated = false;
+                        started = false;
+                        animated = false;
                     });
+
+                    self._element.off('touchmove.jcarouselSwipe');
+                    self._element.off('touchend.jcarouselSwipe touchcancel.jcarouselSwipe');
                 }
-            });
+            }
+
+            function getTouches(event) {
+                if (event.touches !== undefined) {
+                    return {
+                        x: event.touches[0].pageX,
+                        y: event.touches[0].pageY
+                    }
+                } else {
+                    if (event.pageX !== undefined) {
+                        return {
+                            x: event.pageX,
+                            y: event.pageY
+                        }
+                    } else {
+                        return {
+                            x: event.clientX,
+                            y: event.clientY
+                        }
+                    }
+                }
+            }
         },
         _getNewTarget: function(isLeftSwipe) {
             var target = this._instance.target();
