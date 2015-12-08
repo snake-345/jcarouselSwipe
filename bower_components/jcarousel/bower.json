@@ -1,0 +1,8 @@
+{
+  "name": "jcarousel",
+  "main": "./dist/jquery.jcarousel.js",
+  "license": "MIT",
+  "dependencies": {
+    "jquery": ">=1.7"
+  }
+}

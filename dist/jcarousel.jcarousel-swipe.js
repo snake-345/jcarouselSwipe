@@ -10,9 +10,7 @@
 
     $.jCarousel.plugin('jcarouselSwipe', {
         _options: {
-            target: '+=1',
-            event:  'click',
-            method: 'scroll'
+            target: '+=1'
         },
         _init: function() {
 
@@ -29,6 +27,7 @@
             var currentTouch = {};
             var started = false;
             var animated = false;
+            var minLeft, lastItem;
 
             this._element.on('touchstart.jcarouselSwipe', dragStart);
 
@@ -41,6 +40,7 @@
             }
 
             function dragMove(event) {
+                var delta, newLeft;
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
 
@@ -54,26 +54,32 @@
                 }
 
                 if (!animated && Math.abs(startTouch.x - currentTouch.x) > 10) {
-                    var delta = startTouch.x - currentTouch.x;
+                    delta = startTouch.x - currentTouch.x;
+
 
                     if (!started) {
                         started = true;
                         self._addClones();
                         self._currentLeft = self._getListPosition();
+                        lastItem = self._instance.items().last();
+                        minLeft = (lastItem.position().left + lastItem.outerWidth() - self._instance.carousel().outerWidth()) * -1;
                     }
 
-                    self._setListPosition({'left': self._currentLeft - delta + 'px'});
+                    newLeft = self._instance._options.wrap === 'circular' ? self._currentLeft - delta : Math.min(0, Math.max(self._currentLeft - delta, minLeft));
+
+                    self._setListPosition({'left': newLeft + 'px'});
                 }
             }
 
             function dragEnd() {
                 if (started) {
                     var newTarget = self._getNewTarget(startTouch.x - currentTouch.x > 0);
+                    newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
 
                     self._removeClones();
                     self._instance._items = null;
                     animated = true;
-                    self._instance.scroll(newTarget.relative, function() {
+                    self._instance.scroll(newTarget, function() {
                         started = false;
                         animated = false;
                     });
@@ -164,6 +170,10 @@
             var clonesBefore = [];
             var clonesAfter = [];
             var left = self._getListPosition();
+
+            if (this._instance._options.wrap !== 'circular') {
+                return false;
+            }
 
             for (wh = 0, index = 0, curr = first; wh < clip;) {
                 curr = curr.prev();

@@ -1,0 +1,19 @@
+{
+  "name": "jcarouselSwipe",
+  "version": "0.1.0",
+  "description": "Adds comfortable swipe gestures to jcarousel",
+  "author": "Evgeniy Pelmenev <g.snake345@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "browser-sync": "^2.2.3",
+    "gulp": "*",
+    "gulp-load-plugins": "^1.0.0-rc.1",
+    "gulp-notify": "^2.2.0",
+    "gulp-plumber": "^1.0.1",
+    "gulp-rename": "*",
+    "gulp-uglify": "*",
+    "gulp-util": "^3.0.6",
+    "gulp-watch": "^4.1.1",
+    "rimraf": "^2.3.1"
+  }
+}

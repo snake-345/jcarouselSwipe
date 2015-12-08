@@ -1,0 +1,19 @@
+{
+  "name": "jcarousel",
+  "main": "./dist/jquery.jcarousel.js",
+  "license": "MIT",
+  "dependencies": {
+    "jquery": ">=1.7"
+  },
+  "homepage": "https://github.com/jsor/jcarousel",
+  "version": "0.3.4",
+  "_release": "0.3.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.3.4",
+    "commit": "fac0c557ef7ae5711411a33f3ae4989169ae19ec"
+  },
+  "_source": "git://github.com/jsor/jcarousel.git",
+  "_target": ">=0.3.4",
+  "_originalSource": "jcarousel"
+}
