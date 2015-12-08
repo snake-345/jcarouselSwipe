@@ -10,14 +10,21 @@
 
     $.jCarousel.plugin('jcarouselSwipe', {
         _init: function() {
-
+            var self = this;
+            this.carousel().on('jcarousel:reloadend', function() {
+                self._reload();
+            });
         },
         _create: function() {
             this._instance = this.carousel().data('jcarousel');
             this._instance._element.css('touch-action', 'pan-y');
             this.carousel().find('img').attr('draggable', false);
 
-            this._initGestures();
+            this._destroy();
+
+            if (this._instance.items().length > this._instance.fullyvisible().length) {
+                this._initGestures();
+            }
         },
         _initGestures: function() {
             var self = this;
@@ -213,10 +220,11 @@
             }
         },
         _destroy: function() {
-
+            this._element.off('touchstart.jcarouselSwipe mousedown.jcarouselSwipe');
+            $(document).off('touchmove.jcarouselSwipe mousemove.jcarouselSwipe touchend.jcarouselSwipe touchcancel.jcarouselSwipe mouseup.jcarouselSwipe');
         },
         _reload: function() {
-
+            this._create();
         }
     });
 }(jQuery));

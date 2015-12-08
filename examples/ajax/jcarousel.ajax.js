@@ -1,6 +1,8 @@
 (function($) {
     $(function() {
-        var jcarousel = $('.jcarousel').jcarousel();
+        var jcarousel = $('.jcarousel')
+            .jcarousel({wrap: 'circular'})
+            .jcarouselSwipe();
 
         $('.jcarousel-control-prev')
             .on('jcarouselcontrol:active', function() {
