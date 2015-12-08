@@ -10,8 +10,8 @@
 
     $(function() {
         // Setup the carousels. Adjust the options for both carousels here.
-        var carouselStage      = $('.carousel-stage').jcarousel();
-        var carouselNavigation = $('.carousel-navigation').jcarousel();
+        var carouselStage      = $('.carousel-stage').jcarousel().jcarouselSwipe();
+        var carouselNavigation = $('.carousel-navigation').jcarousel().jcarouselSwipe();
 
         // We loop through the items of the navigation carousel and set it up
         // as a control for an item from the stage carousel.

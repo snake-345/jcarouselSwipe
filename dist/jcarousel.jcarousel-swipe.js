@@ -18,6 +18,8 @@
         _create: function() {
             this._instance = this.carousel().data('jcarousel');
             this._instance._element.css('touch-action', 'pan-y');
+            this._carouselOffset = this.carousel().offset().left + parseInt(this.carousel().css('border-left-width')) + parseInt(this.carousel().css('padding-left'));
+            this._slidesCount = this._instance.items().length;
             this.carousel().find('img').attr('draggable', false);
 
             this._destroy();
@@ -67,7 +69,7 @@
                         self._addClones();
                         self._currentLeft = self._getListPosition();
                         lastItem = self._instance.items().last();
-                        minLeft = (lastItem.position().left + lastItem.outerWidth() - self._instance.carousel().outerWidth()) * -1;
+                        minLeft = (lastItem.position().left + lastItem.outerWidth() - self._instance.carousel().innerWidth()) * -1;
                     }
 
                     newLeft = self._instance._options.wrap === 'circular' ? self._currentLeft - delta : Math.min(0, Math.max(self._currentLeft - delta, minLeft));
@@ -76,10 +78,18 @@
                 }
             }
 
-            function dragEnd() {
+            function dragEnd(event) {
+                event = event.originalEvent || event || window.event;
                 if (started) {
                     var newTarget = self._getNewTarget(startTouch.x - currentTouch.x > 0);
                     newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
+
+                    $(event.target).on("click.disable", function (event) {
+                        event.stopImmediatePropagation();
+                        event.stopPropagation();
+                        event.preventDefault();
+                        $(event.target).off("click.disable");
+                    });
 
                     self._removeClones();
                     self._instance._items = null;
@@ -119,21 +129,22 @@
             var target = this._instance.target();
             var staticTarget = this._instance.index(target);
             var relativeTarget = 0;
-            var carouselOffset = this._instance.carousel().offset().left;
-            var slidesCount = this._instance.items().length;
 
             while(true) {
-                if (isLeftSwipe && target.offset().left - carouselOffset >= 0 ||
-                    !isLeftSwipe && target.offset().left - carouselOffset <= 0) {
+                if (!target.length ||
+                    isLeftSwipe && target.offset().left - this._carouselOffset >= 0 ||
+                    !isLeftSwipe && target.offset().left - this._carouselOffset <= 0) {
                     break;
                 }
 
                 if (isLeftSwipe) {
                     target = target.next();
-                    staticTarget = staticTarget + 1 >= slidesCount ? 0 : staticTarget + 1;
+                    if (!target.length) break;
+                    staticTarget = staticTarget + 1 >= this._slidesCount ? 0 : staticTarget + 1;
                 } else {
                     target = target.prev();
-                    staticTarget = staticTarget - 1 < 0 ? slidesCount - 1 : staticTarget - 1;
+                    if (!target.length) break;
+                    staticTarget = staticTarget - 1 < 0 ? this._slidesCount - 1 : staticTarget - 1;
                 }
 
                 relativeTarget++;

@@ -95,17 +95,17 @@
     display: block;
     position: absolute;
     top: 0;
-    width: 305px;
+    width: 65px;
     height: 410px;
     color: #fff;
 }
 
 .connected-carousels .prev-stage {
-    left: 0;
+    left: -65px;
 }
 
 .connected-carousels .next-stage {
-    right: 0;
+    right: -65px;
 }
 
 .connected-carousels .prev-stage.inactive,
