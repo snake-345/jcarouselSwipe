@@ -9,15 +9,13 @@
     'use strict';
 
     $.jCarousel.plugin('jcarouselSwipe', {
-        _options: {
-            target: '+=1'
-        },
         _init: function() {
 
         },
         _create: function() {
             this._instance = this.carousel().data('jcarousel');
             this._instance._element.css('touch-action', 'pan-y');
+            this.carousel().find('img').attr('draggable', false);
 
             this._initGestures();
         },
@@ -29,14 +27,14 @@
             var animated = false;
             var minLeft, lastItem;
 
-            this._element.on('touchstart.jcarouselSwipe', dragStart);
+            this._element.on('touchstart.jcarouselSwipe mousedown.jcarouselSwipe', dragStart);
 
             function dragStart(event) {
                 event = event.originalEvent || event || window.event;
                 startTouch = getTouches(event);
 
-                self._element.on('touchmove.jcarouselSwipe', dragMove);
-                self._element.on('touchend.jcarouselSwipe touchcancel.jcarouselSwipe', dragEnd);
+                $(document).on('touchmove.jcarouselSwipe mousemove.jcarouselSwipe', dragMove);
+                $(document).on('touchend.jcarouselSwipe touchcancel.jcarouselSwipe mouseup.jcarouselSwipe', dragEnd);
             }
 
             function dragMove(event) {
@@ -49,7 +47,7 @@
                 }
 
                 if (Math.abs(startTouch.y - currentTouch.y) > 10 && !started) {
-                    self._element.off('touchmove.jcarouselSwipe');
+                    $(document).off('touchmove.jcarouselSwipe mousemove.jcarouselSwipe');
                     return;
                 }
 
@@ -83,10 +81,10 @@
                         started = false;
                         animated = false;
                     });
-
-                    self._element.off('touchmove.jcarouselSwipe');
-                    self._element.off('touchend.jcarouselSwipe touchcancel.jcarouselSwipe');
                 }
+
+                $(document).off('touchmove.jcarouselSwipe mousemove.jcarouselSwipe');
+                $(document).off('touchend.jcarouselSwipe touchcancel.jcarouselSwipe mouseup.jcarouselSwipe');
             }
 
             function getTouches(event) {
@@ -163,7 +161,7 @@
             var items = self._instance.items();
             var first = self._instance.first();
             var last = self._instance.last();
-            var clip = self._instance.clipping();
+            var clip = $(window).width();
             var curr;
             var wh;
             var index;
@@ -179,7 +177,7 @@
                 curr = curr.prev();
 
                 if (curr.length === 0) {
-                    --index;
+                    index = --index < -items.length ? -1 : index;
                     wh += self._instance.dimension(items.eq(index));
                     clonesBefore.push(items.eq(index).clone().attr('data-jcarousel-clone', true));
                 } else {
@@ -193,7 +191,7 @@
                 curr = curr.next();
 
                 if (curr.length === 0) {
-                    ++index;
+                    index = ++index > items.length - 1 ? 0 : index;
                     wh += self._instance.dimension(items.eq(index));
                     clonesAfter.push(items.eq(index).clone().attr('data-jcarousel-clone', true));
                 } else {
