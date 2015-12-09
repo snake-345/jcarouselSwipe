@@ -17,7 +17,8 @@
             })
             .jcarousel({
                 wrap: 'circular'
-            });
+            })
+            .jcarouselSwipe();
 
         $('.jcarousel-control-prev')
             .jcarouselControl({
