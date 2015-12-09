@@ -1,6 +1,12 @@
 # jcarouselSwipe plugin
 Adds support user-friendly swipe gestures.
 
+## Features
+* user-friendly swipe gestures
+* work with any wrap option(both, first, last, circular)
+* work with vertical carousels
+* easy use
+
 ## Requirments
 * jQuery
 * jquery.jcarousel-core.js(minimum) also you may use bundle version: jquery.jcarousel.js
