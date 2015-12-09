@@ -17,8 +17,8 @@
         },
         _create: function() {
             this._instance = this.carousel().data('jcarousel');
-            this._instance._element.css('touch-action', 'pan-y');
-            this._carouselOffset = this.carousel().offset().left + parseInt(this.carousel().css('border-left-width')) + parseInt(this.carousel().css('padding-left'));
+            this._instance._element.css('touch-action', (!this._instance.vertical ? 'pan-y' : 'pan-x'));
+            this._carouselOffset = this.carousel().offset()[this._instance.lt] + parseInt(this.carousel().css((!this._instance.vertical ? 'border-left-width' : 'border-top-width'))) + parseInt(this.carousel().css((!this._instance.vertical ? 'padding-left' : 'padding-top')));
             this._slidesCount = this._instance.items().length;
             this.carousel().find('img').attr('draggable', false);
 
@@ -34,7 +34,9 @@
             var currentTouch = {};
             var started = false;
             var animated = false;
-            var minLeft, lastItem;
+            var xKey = !this._instance.vertical ? 'x' : 'y';
+            var yKey = !this._instance.vertical ? 'y' : 'x';
+            var minLT, lastItem;
 
             this._element.on('touchstart.jcarouselSwipe mousedown.jcarouselSwipe', dragStart);
 
@@ -47,7 +49,7 @@
             }
 
             function dragMove(event) {
-                var delta, newLeft;
+                var delta, newLT;
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
 
@@ -55,33 +57,33 @@
                     event.preventDefault();
                 }
 
-                if (Math.abs(startTouch.y - currentTouch.y) > 10 && !started) {
+                if (Math.abs(startTouch[yKey] - currentTouch[yKey]) > 10 && !started) {
                     $(document).off('touchmove.jcarouselSwipe mousemove.jcarouselSwipe');
                     return;
                 }
 
-                if (!animated && Math.abs(startTouch.x - currentTouch.x) > 10) {
-                    delta = startTouch.x - currentTouch.x;
+                if (!animated && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10) {
+                    delta = startTouch[xKey] - currentTouch[xKey];
 
 
                     if (!started) {
                         started = true;
                         self._addClones();
-                        self._currentLeft = self._getListPosition();
+                        self._currentLT = self._getListPosition();
                         lastItem = self._instance.items().last();
-                        minLeft = (lastItem.position().left + lastItem.outerWidth() - self._instance.carousel().innerWidth()) * -1;
+                        minLT = (lastItem.position()[self._instance.lt] + self._instance.dimension(lastItem) - self._instance.clipping()) * -1;
                     }
 
-                    newLeft = self._instance._options.wrap === 'circular' ? self._currentLeft - delta : Math.min(0, Math.max(self._currentLeft - delta, minLeft));
+                    newLT = self._instance._options.wrap === 'circular' ? self._currentLT - delta : Math.min(0, Math.max(self._currentLT - delta, minLT));
 
-                    self._setListPosition({'left': newLeft + 'px'});
+                    self._setListPosition(newLT + 'px');
                 }
             }
 
             function dragEnd(event) {
                 event = event.originalEvent || event || window.event;
                 if (started) {
-                    var newTarget = self._getNewTarget(startTouch.x - currentTouch.x > 0);
+                    var newTarget = self._getNewTarget(startTouch[xKey] - currentTouch[xKey] > 0);
                     newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
 
                     $(event.target).on("click.disable", function (event) {
@@ -125,19 +127,19 @@
                 }
             }
         },
-        _getNewTarget: function(isLeftSwipe) {
+        _getNewTarget: function(isSwipeToNext) {
             var target = this._instance.target();
             var staticTarget = this._instance.index(target);
             var relativeTarget = 0;
 
             while(true) {
                 if (!target.length ||
-                    isLeftSwipe && target.offset().left - this._carouselOffset >= 0 ||
-                    !isLeftSwipe && target.offset().left - this._carouselOffset <= 0) {
+                    isSwipeToNext && target.offset()[this._instance.lt] - this._carouselOffset >= 0 ||
+                    !isSwipeToNext && target.offset()[this._instance.lt] - this._carouselOffset <= 0) {
                     break;
                 }
 
-                if (isLeftSwipe) {
+                if (isSwipeToNext) {
                     target = target.next();
                     if (!target.length) break;
                     staticTarget = staticTarget + 1 >= this._slidesCount ? 0 : staticTarget + 1;
@@ -152,7 +154,7 @@
 
             return {
                 static: staticTarget,
-                relative: (isLeftSwipe ? '+' : '-') + '=' + relativeTarget
+                relative: (isSwipeToNext ? '+' : '-') + '=' + relativeTarget
             };
         },
         _getListPosition: function() {
@@ -163,31 +165,35 @@
             var transforms   = !!option.transforms;
             var transforms3d = !!option.transforms3d;
             var css = {};
+            var isLeft = this._instance.lt === 'left';
+            position = position || 0;
 
             if (transforms3d) {
-                css.transform = 'translate3d(' + (position.left || 0) + ',' + (position.top || 0) + ',0)';
+                css.transform = 'translate3d(' + (isLeft ? position : 0) + ',' + (isLeft ? 0 : position) + ',0)';
             } else if (transforms) {
-                css.transform = 'translate(' + (position.left || 0) + ',' + (position.top || 0) + ')';
+                css.transform = 'translate(' + (isLeft ? position : 0) + ',' + (isLeft ? 0 : position) + ')';
             } else {
-                css = position;
+                css[this._instance.lt] = position;
             }
 
             this._instance.list().css(css);
         },
         _addClones: function() {
             var self = this;
-            var items = self._instance.items();
-            var first = self._instance.first();
-            var last = self._instance.last();
-            var clip = $(window).width();
+            var inst = this._instance;
+            var items = inst.items();
+            var first = inst.first();
+            var last = inst.last();
+            var clip = inst.dimension($(window));
             var curr;
             var wh;
             var index;
             var clonesBefore = [];
             var clonesAfter = [];
-            var left = self._getListPosition();
+            var lt = self._getListPosition();
+            var moveObj = {};
 
-            if (this._instance._options.wrap !== 'circular') {
+            if (inst._options.wrap !== 'circular') {
                 return false;
             }
 
@@ -196,38 +202,41 @@
 
                 if (curr.length === 0) {
                     index = --index < -items.length ? -1 : index;
-                    wh += self._instance.dimension(items.eq(index));
+                    wh += inst.dimension(items.eq(index));
                     clonesBefore.push(items.eq(index).clone().attr('data-jcarousel-clone', true));
                 } else {
-                    wh += self._instance.dimension(curr);
+                    wh += inst.dimension(curr);
                 }
             }
 
-            left = Math.min(left, - wh) + 'px';
+            lt = Math.min(lt, - wh) + 'px';
 
             for (wh = 0, index = -1, curr = last; wh < clip;) {
                 curr = curr.next();
 
                 if (curr.length === 0) {
                     index = ++index > items.length - 1 ? 0 : index;
-                    wh += self._instance.dimension(items.eq(index));
+                    wh += inst.dimension(items.eq(index));
                     clonesAfter.push(items.eq(index).clone().attr('data-jcarousel-clone', true));
                 } else {
-                    wh += self._instance.dimension(curr);
+                    wh += inst.dimension(curr);
                 }
             }
 
-            self._instance._items.first().before(clonesBefore.reverse());
-            self._instance._items.last().after(clonesAfter);
-            self._instance.move({left: left});
+            inst._items.first().before(clonesBefore.reverse());
+            inst._items.last().after(clonesAfter);
+            moveObj[inst.lt] = lt;
+            inst.move(moveObj);
         },
         _removeClones: function() {
             var startPosition = this._instance.first().position()[this._instance.lt];
             var removeCLonesWidth;
+            var moveObj = {};
             this._instance.list().find('[data-jcarousel-clone]').remove();
             removeCLonesWidth = Math.abs(this._instance.first().position()[this._instance.lt] - startPosition);
             if (removeCLonesWidth) {
-                this._instance.move({left: this._getListPosition() + removeCLonesWidth + 'px'});
+                moveObj[this._instance.lt] = this._getListPosition() + removeCLonesWidth + 'px';
+                this._instance.move(moveObj);
             }
         },
         _destroy: function() {
