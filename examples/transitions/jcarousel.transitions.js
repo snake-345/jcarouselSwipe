@@ -7,7 +7,7 @@
                 transforms3d: Modernizr.csstransforms3d,
                 easing:       'ease'
             } : false
-        });
+        }).jcarouselSwipe();
 
         $('.jcarousel-control-prev').jcarouselControl({
             target: '-=1'
