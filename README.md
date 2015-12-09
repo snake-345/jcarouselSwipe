@@ -25,5 +25,8 @@ $('.jcarousel')
     .jcarouselSwipe(); // init jcarouselSwipe
 ```
 
+## Examples
+You can find examples in the corresponding directory. I'm include my plugin in all jcarousel examples and added vertical carousel example.
+
 ## License
 Copyright (c) 2015 Evgeniy Pelmenev. Released under the MIT license.
