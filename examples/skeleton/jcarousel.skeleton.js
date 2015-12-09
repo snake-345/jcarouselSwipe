@@ -6,7 +6,8 @@
         $('.jcarousel')
             .jcarousel({
                 // Options go here
-            });
+            })
+            .jcarouselSwipe(); // swipe support
 
         /*
          Prev control initialization
