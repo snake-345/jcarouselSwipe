@@ -1,8 +1,14 @@
 {
   "name": "jcarouselSwipe",
+  "main": "./dist/jquery.jcarousel-swipe.js",
   "version": "0.1.0",
   "authors": [
     "Evgeniy Pelmenev <g.snake345@gmail.com>"
+  ],
+  "keywords": [
+    "jcarousel",
+    "swipe",
+    "touch"
   ],
   "license": "MIT",
   "ignore": [
