@@ -16,7 +16,7 @@ To use the plugin include jquery, jcarousel and jcarouselSwipe source files into
 ``` HTML
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/jquery.jcarousel.min.js"></script>
-<script type="text/javascript" src="js/jcarousel.jcarousel-swipe.min.js"></script>
+<script type="text/javascript" src="js/jquery.jcarousel-swipe.min.js"></script>
 ```
 and init the plugin:
 ``` javascript
