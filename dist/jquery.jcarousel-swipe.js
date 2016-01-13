@@ -4,6 +4,9 @@
     'use strict';
 
     $.jCarousel.plugin('jcarouselSwipe', {
+        _options: {
+            perSwipe: 1
+        },
         _init: function() {
             var self = this;
             this.carousel().on('jcarousel:reloadend', function() {
@@ -146,6 +149,14 @@
 
                 relativeTarget++;
             }
+
+            if (isSwipeToNext) {
+                staticTarget = staticTarget + Math.abs(relativeTarget - this._options.perSwipe * Math.ceil(relativeTarget / this._options.perSwipe));
+            } else {
+                staticTarget = staticTarget - Math.abs(relativeTarget - this._options.perSwipe * Math.ceil(relativeTarget / this._options.perSwipe));
+            }
+
+            relativeTarget = this._options.perSwipe * Math.ceil(relativeTarget / this._options.perSwipe);
 
             return {
                 static: staticTarget,

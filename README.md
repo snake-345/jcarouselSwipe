@@ -24,6 +24,13 @@ $('.jcarousel')
     .jcarousel()       // init jcarousel
     .jcarouselSwipe(); // init jcarouselSwipe
 ```
+  
+You may set options "perSwipe". It means how many slides should be scrolls at a go.
+``` javascript
+$('.jcarousel').jcarouselSwipe({
+    perSwipe: 3 // by default 1
+});
+```
 
 ## Examples
 You can find examples in the corresponding directory. I'm included my plugin in all jcarousel examples and added vertical carousel example.

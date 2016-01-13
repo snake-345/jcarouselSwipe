@@ -18,7 +18,9 @@
             .jcarousel({
                 wrap: 'circular'
             })
-            .jcarouselSwipe();
+            .jcarouselSwipe({
+                perSwipe: 3
+            });
 
         $('.jcarousel-control-prev')
             .jcarouselControl({
