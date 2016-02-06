@@ -1,4 +1,4 @@
-/*! jсarouselSwipe - v0.1.1 - 2015-12-10
+/*! jсarouselSwipe - v0.2.1 - 2015-12-10
 * Copyright (c) 2015 Evgeniy Pelmenev; Licensed MIT */
 (function($) {
     'use strict';
@@ -84,13 +84,19 @@
                     var newTarget = self._getNewTarget(startTouch[xKey] - currentTouch[xKey] > 0);
                     newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
 
+                    // Prevent pass-through click event from occuring on certain touch devices
                     $(event.target).on("click.disable", function (event) {
                         event.stopImmediatePropagation();
                         event.stopPropagation();
                         event.preventDefault();
                         $(event.target).off("click.disable");
                     });
-
+                    
+                    // Automate removing click block, so it does not interfere with inner element click events
+                    setTimeout(function (target) {
+                        $(target).off("click.disable");
+                    }, 10, event.target)
+                    
                     self._removeClones();
                     self._instance._items = null;
                     animated = true;
