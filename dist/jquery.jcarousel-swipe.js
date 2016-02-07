@@ -1,4 +1,4 @@
-/*! jсarouselSwipe - v0.1.1 - 2015-12-10
+/*! jсarouselSwipe - v0.2.1 - 2015-12-10
 * Copyright (c) 2015 Evgeniy Pelmenev; Licensed MIT */
 (function($) {
     'use strict';
@@ -18,7 +18,11 @@
             this._instance._element.css('touch-action', (!this._instance.vertical ? 'pan-y' : 'pan-x'));
             this._carouselOffset = this.carousel().offset()[this._instance.lt] + parseInt(this.carousel().css((!this._instance.vertical ? 'border-left-width' : 'border-top-width'))) + parseInt(this.carousel().css((!this._instance.vertical ? 'padding-left' : 'padding-top')));
             this._slidesCount = this._instance.items().length;
-            this.carousel().find('img').attr('draggable', false);
+            this.carousel().find('img, a')
+                .attr('draggable', false)
+                .css('user-select', 'none')
+                .on('dragstart', function(event) { event.preventDefault() });
+
 
             this._destroy();
 
@@ -35,12 +39,14 @@
             var xKey = !this._instance.vertical ? 'x' : 'y';
             var yKey = !this._instance.vertical ? 'y' : 'x';
             var minLT, lastItem;
+            var startTarget;
 
             this._element.on('touchstart.jcarouselSwipe mousedown.jcarouselSwipe', dragStart);
 
             function dragStart(event) {
                 event = event.originalEvent || event || window.event;
                 startTouch = getTouches(event);
+                startTarget = event.target || event.srcElement;
 
                 $(document).on('touchmove.jcarouselSwipe mousemove.jcarouselSwipe', dragMove);
                 $(document).on('touchend.jcarouselSwipe touchcancel.jcarouselSwipe mouseup.jcarouselSwipe', dragEnd);
@@ -84,12 +90,14 @@
                     var newTarget = self._getNewTarget(startTouch[xKey] - currentTouch[xKey] > 0);
                     newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
 
-                    $(event.target).on("click.disable", function (event) {
-                        event.stopImmediatePropagation();
-                        event.stopPropagation();
-                        event.preventDefault();
-                        $(event.target).off("click.disable");
-                    });
+                    if (startTarget === event.target) {
+                        $(event.target).on("click.disable", function (event) {
+                            event.stopImmediatePropagation();
+                            event.stopPropagation();
+                            event.preventDefault();
+                            $(event.target).off("click.disable");
+                        });
+                    }
 
                     self._removeClones();
                     self._instance._items = null;
