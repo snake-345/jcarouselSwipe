@@ -1,4 +1,4 @@
-/*! jсarouselSwipe - v0.2.1 - 2015-12-10
+/*! jсarouselSwipe - v0.2.0 - 2015-12-10
 * Copyright (c) 2015 Evgeniy Pelmenev; Licensed MIT */
 (function($) {
     'use strict';
@@ -22,7 +22,6 @@
                 .attr('draggable', false)
                 .css('user-select', 'none')
                 .on('dragstart', function(event) { event.preventDefault() });
-
 
             this._destroy();
 
