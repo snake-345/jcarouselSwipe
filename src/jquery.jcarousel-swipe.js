@@ -1,4 +1,4 @@
-/*! jсarouselSwipe - v0.3.0 - 2016-02-18
+/*! jсarouselSwipe - v0.3.1 - 2016-02-18
 * Copyright (c) 2015 Evgeniy Pelmenev; Licensed MIT */
 (function($) {
     'use strict';
@@ -90,7 +90,7 @@
             function dragEnd(event) {
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
-                if (started || !self._options.draggable) {
+                if (started || (!self._options.draggable && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10)) {
                     var newTarget = self._getNewTarget(startTouch[xKey] - currentTouch[xKey] > 0);
                     newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
 
