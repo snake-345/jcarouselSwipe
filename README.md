@@ -24,11 +24,29 @@ $('.jcarousel')
     .jcarousel()       // init jcarousel
     .jcarouselSwipe(); // init jcarouselSwipe
 ```
-  
-You may set options "perSwipe". It means how many slides will be scrolls at a go.
+
+## Options
+### perSwipe 
+It means how many slides will be scrolls at a go.
 ``` javascript
 $('.jcarousel').jcarouselSwipe({
     perSwipe: 3 // by default 1
+});
+```
+
+### draggable
+On/off dragging items on swipe.
+``` javascript
+$('.jcarousel').jcarouselSwipe({
+    draggable: false // by default true
+});
+```
+
+### method
+What method should used to switch slides.
+``` javascript
+$('.jcarousel').jcarouselSwipe({
+    method: 'scrollIntoView' // by default 'scroll'
 });
 ```
 
