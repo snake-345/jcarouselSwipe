@@ -1,11 +1,13 @@
-/*! jсarouselSwipe - v0.2.0 - 2015-12-10
+/*! jсarouselSwipe - v0.2.1 - 2015-12-10
 * Copyright (c) 2015 Evgeniy Pelmenev; Licensed MIT */
 (function($) {
     'use strict';
 
     $.jCarousel.plugin('jcarouselSwipe', {
         _options: {
-            perSwipe: 1
+            perSwipe: 1,
+            draggable: true,
+            method: 'scroll'
         },
         _init: function() {
             var self = this;
@@ -47,12 +49,14 @@
                 startTouch = getTouches(event);
                 startTarget = event.target || event.srcElement;
 
-                $(document).on('touchmove.jcarouselSwipe mousemove.jcarouselSwipe', dragMove);
+                if (self._options.draggable) {
+                    $(document).on('touchmove.jcarouselSwipe mousemove.jcarouselSwipe', dragMove);
+                }
                 $(document).on('touchend.jcarouselSwipe touchcancel.jcarouselSwipe mouseup.jcarouselSwipe', dragEnd);
             }
 
             function dragMove(event) {
-                var delta, newLT;
+                var delta, newLT, itemsOption;
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
 
@@ -68,12 +72,12 @@
                 if (!animated && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10) {
                     delta = startTouch[xKey] - currentTouch[xKey];
 
-
                     if (!started) {
                         started = true;
                         self._addClones();
                         self._currentLT = self._getListPosition();
-                        lastItem = self._instance.items().last();
+                        itemsOption = self._instance.options('items');
+                        lastItem = ($.isFunction(itemsOption) ? itemsOption.call(self._instance) : self._instance.list().find(itemsOption)).last();
                         minLT = (lastItem.position()[self._instance.lt] + self._instance.dimension(lastItem) - self._instance.clipping()) * -1;
                     }
 
@@ -85,7 +89,8 @@
 
             function dragEnd(event) {
                 event = event.originalEvent || event || window.event;
-                if (started) {
+                currentTouch = getTouches(event);
+                if (started || !self._options.draggable) {
                     var newTarget = self._getNewTarget(startTouch[xKey] - currentTouch[xKey] > 0);
                     newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
 
@@ -98,13 +103,20 @@
                         });
                     }
 
-                    self._removeClones();
-                    self._instance._items = null;
+                    if (self._instance._options.wrap === 'circular') {
+                        self._removeClones();
+                        self._instance._items = null;
+                    }
                     animated = true;
-                    self._instance.scroll(newTarget, function() {
+                    self._instance[self._options.method](newTarget, function() {
                         started = false;
                         animated = false;
+                        if (self._instance._options.wrap !== 'circular') {
+                            self._removeClones();
+                            self._instance._items = null;
+                        }
                     });
+
                 }
 
                 $(document).off('touchmove.jcarouselSwipe mousemove.jcarouselSwipe');
@@ -137,24 +149,29 @@
             var staticTarget = this._instance.index(target);
             var relativeTarget = 0;
 
-            while(true) {
-                if (!target.length ||
-                    isSwipeToNext && target.offset()[this._instance.lt] - this._carouselOffset >= 0 ||
-                    !isSwipeToNext && target.offset()[this._instance.lt] - this._carouselOffset <= 0) {
-                    break;
-                }
+            if (this._options.draggable) {
+                while(true) {
+                    if (!target.length ||
+                        isSwipeToNext && target.offset()[this._instance.lt] - this._carouselOffset >= 0 ||
+                        !isSwipeToNext && target.offset()[this._instance.lt] - this._carouselOffset <= 0) {
+                        break;
+                    }
 
-                if (isSwipeToNext) {
-                    target = target.next();
-                    if (!target.length) break;
-                    staticTarget = staticTarget + 1 >= this._slidesCount ? 0 : staticTarget + 1;
-                } else {
-                    target = target.prev();
-                    if (!target.length) break;
-                    staticTarget = staticTarget - 1 < 0 ? this._slidesCount - 1 : staticTarget - 1;
-                }
+                    if (isSwipeToNext) {
+                        target = target.next();
+                        if (!target.length) break;
+                        staticTarget = staticTarget + 1;
+                    } else {
+                        target = target.prev();
+                        if (!target.length) break;
+                        staticTarget = staticTarget - 1;
+                    }
 
-                relativeTarget++;
+                    relativeTarget++;
+                }
+            } else {
+                staticTarget = isSwipeToNext ? staticTarget + 1 : staticTarget - 1;
+                relativeTarget = 1;
             }
 
             if (isSwipeToNext) {
@@ -163,6 +180,15 @@
                 staticTarget = staticTarget - Math.abs(relativeTarget - this._options.perSwipe * Math.ceil(relativeTarget / this._options.perSwipe));
             }
 
+            if (this._instance._options.wrap === 'first') {
+                staticTarget = Math.min(this._slidesCount - 1, staticTarget);
+            } else if (this._instance._options.wrap === 'last') {
+                staticTarget = Math.max(0, staticTarget);
+            } else if (!this._instance._options.wrap) {
+                staticTarget = Math.max(0, Math.min(this._slidesCount - 1, staticTarget));
+            }
+
+            staticTarget = staticTarget % this._slidesCount;
             relativeTarget = this._options.perSwipe * Math.ceil(relativeTarget / this._options.perSwipe);
 
             return {
@@ -206,40 +232,44 @@
             var lt = self._getListPosition();
             var moveObj = {};
 
-            if (inst._options.wrap !== 'circular') {
+            if (!inst._options.wrap) {
                 return false;
             }
 
-            for (wh = 0, index = 0, curr = first; wh < clip;) {
-                curr = curr.prev();
+            if (inst._options.wrap !== 'last') {
+                for (wh = 0, index = 0, curr = first; wh < clip;) {
+                    curr = curr.prev();
 
-                if (curr.length === 0) {
-                    index = --index < -items.length ? -1 : index;
-                    wh += inst.dimension(items.eq(index));
-                    clonesBefore.push(items.eq(index).clone().attr('data-jcarousel-clone', true));
-                } else {
-                    wh += inst.dimension(curr);
+                    if (curr.length === 0) {
+                        index = --index < -items.length ? -1 : index;
+                        wh += inst.dimension(items.eq(index));
+                        clonesBefore.push(items.eq(index).clone().attr('data-jcarousel-clone', true));
+                    } else {
+                        wh += inst.dimension(curr);
+                    }
                 }
+
+                lt = Math.min(lt, - wh) + 'px';
+                inst._items.first().before(clonesBefore.reverse());
+                moveObj[inst.lt] = lt;
+                inst.move(moveObj);
             }
 
-            lt = Math.min(lt, - wh) + 'px';
+            if (inst._options.wrap !== 'first') {
+                for (wh = 0, index = -1, curr = last; wh < clip;) {
+                    curr = curr.next();
 
-            for (wh = 0, index = -1, curr = last; wh < clip;) {
-                curr = curr.next();
-
-                if (curr.length === 0) {
-                    index = ++index > items.length - 1 ? 0 : index;
-                    wh += inst.dimension(items.eq(index));
-                    clonesAfter.push(items.eq(index).clone().attr('data-jcarousel-clone', true));
-                } else {
-                    wh += inst.dimension(curr);
+                    if (curr.length === 0) {
+                        index = ++index > items.length - 1 ? 0 : index;
+                        wh += inst.dimension(items.eq(index));
+                        clonesAfter.push(items.eq(index).clone().attr('data-jcarousel-clone', true));
+                    } else {
+                        wh += inst.dimension(curr);
+                    }
                 }
-            }
 
-            inst._items.first().before(clonesBefore.reverse());
-            inst._items.last().after(clonesAfter);
-            moveObj[inst.lt] = lt;
-            inst.move(moveObj);
+                inst._items.last().after(clonesAfter);
+            }
         },
         _removeClones: function() {
             var startPosition = this._instance.first().position()[this._instance.lt];
