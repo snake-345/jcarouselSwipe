@@ -1,4 +1,4 @@
-/*! jсarouselSwipe - v0.3.1 - 2016-02-18
+/*! jсarouselSwipe - v0.3.2 - 2016-02-18
 * Copyright (c) 2015 Evgeniy Pelmenev; Licensed MIT */
 (function($) {
     'use strict';
@@ -88,6 +88,7 @@
             }
 
             function dragEnd(event) {
+                console.log(event);
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
                 if (started || (!self._options.draggable && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10)) {
@@ -124,10 +125,15 @@
             }
 
             function getTouches(event) {
-                if (event.touches !== undefined) {
+                if (event.touches !== undefined && event.touches.length > 0) {
                     return {
                         x: event.touches[0].pageX,
                         y: event.touches[0].pageY
+                    }
+                } else if (event.changedTouches !== undefined && event.changedTouches.length > 0) {
+                    return {
+                        x: event.changedTouches[0].pageX,
+                        y: event.changedTouches[0].pageY
                     }
                 } else {
                     if (event.pageX !== undefined) {
