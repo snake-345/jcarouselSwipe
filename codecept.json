@@ -1,0 +1,17 @@
+{
+  "tests": "./tests/*.js",
+  "timeout": 10000,
+  "output": "./tests/output",
+  "helpers": {
+    "WebDriverIO": {
+      "url": "http://localhost:3000/",
+      "browser": "firefox"
+    }
+  },
+  "include": {
+    "I": "./tests/custom-steps/steps-file.js"
+  },
+  "bootstrap": false,
+  "mocha": {},
+  "name": "jcarouselSwipe"
+}
