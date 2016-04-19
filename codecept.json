@@ -6,6 +6,9 @@
     "WebDriverIO": {
       "url": "http://localhost:3000/",
       "browser": "firefox"
+    },
+    "Swipe": {
+      "require": "./tests/helpers/swipe_helper.js"
     }
   },
   "include": {
