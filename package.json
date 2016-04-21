@@ -8,6 +8,7 @@
     "browser-sync": "^2.2.3",
     "codeceptjs": "*",
     "gulp": "*",
+    "gulp-exec": "^2.1.2",
     "gulp-load-plugins": "^1.0.0-rc.1",
     "gulp-notify": "^2.2.0",
     "gulp-plumber": "^1.0.1",
@@ -16,6 +17,7 @@
     "gulp-util": "^3.0.6",
     "gulp-watch": "^4.1.1",
     "rimraf": "^2.3.1",
+    "selenium-server": "^2.53.0",
     "webdriverio": "^4.0.5"
   }
 }
