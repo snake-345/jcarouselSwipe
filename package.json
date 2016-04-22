@@ -13,11 +13,13 @@
     "gulp-notify": "^2.2.0",
     "gulp-plumber": "^1.0.1",
     "gulp-rename": "*",
+    "gulp-run": "^1.6.12",
     "gulp-uglify": "*",
     "gulp-util": "^3.0.6",
     "gulp-watch": "^4.1.1",
     "rimraf": "^2.3.1",
-    "selenium-server": "^2.53.0",
+    "run-sequence": "^1.1.5",
+    "selenium-standalone": "^5.1.0",
     "webdriverio": "^4.0.5"
   }
 }

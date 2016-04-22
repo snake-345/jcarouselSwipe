@@ -1,7 +1,9 @@
 'use strict';
 
-var gulp = require('gulp'),
-	$    = require('gulp-load-plugins')();
+var gulp        = require('gulp'),
+	selenium    = require('selenium-standalone'),
+	runSequence = require('run-sequence'),
+	$           = require('gulp-load-plugins')();
 
 // because gulp-load-$ loads plugins only with prefix gulp-. Shit.
 $.browserSync = require('browser-sync');
@@ -57,6 +59,47 @@ gulp.task('webserver', function () {
 
 gulp.task('clean', function (cb) {
 	rimraf('dist/', cb);
+});
+
+gulp.task('runtests:selenium', function (done) {
+	selenium.install(
+		{
+			logger: function (message) {
+				console.log(message);
+			}
+		},
+		function (error) {
+			if (error) return done(error);
+			selenium.start(function (error, child) {
+				if (error) return done(error);
+				selenium.child = child;
+				done();
+			});
+		}
+	);
+});
+
+gulp.task('runtests:codeceptjs', function(done) {
+	$.run('node_modules/codeceptjs/bin/codecept.js run').exec(function() {
+		done();
+	});
+});
+
+gulp.task('runtests:webserver', function(done) {
+	$.browserSync({
+		server: config.server,
+		host: config.host,
+		open: false
+	}, function() {
+		done();
+	});
+});
+
+gulp.task('runtests', function() {
+	runSequence('runtests:selenium', ['runtests:webserver', 'runtests:codeceptjs'], function() {
+		selenium.child.kill();
+		$.browserSync.exit();
+	});
 });
 
 gulp.task('default', ['build', 'webserver', 'watch']);
