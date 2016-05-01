@@ -88,7 +88,6 @@
             }
 
             function dragEnd(event) {
-                console.log(event);
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
                 if (started || (!self._options.draggable && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10)) {
