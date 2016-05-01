@@ -80,7 +80,7 @@ gulp.task('runtests:selenium', function (done) {
 });
 
 gulp.task('runtests:codeceptjs', function(done) {
-	$.run('node_modules/codeceptjs/bin/codecept.js run').exec(function() {
+	$.run('node_modules/codeceptjs/bin/codecept.js run --debug').exec(function() {
 		done();
 	});
 });

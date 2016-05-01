@@ -1,3 +1,8 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
 /*
 This is the visible area of you carousel.
 Set a width here to define how much items are visible.
@@ -31,4 +36,14 @@ have a fixed width and height (but it's not required).
 .jcarousel li {
     /* Required only for block elements like <li>'s */
     float: left;
+    height: 300px;
+    font-size: 80px;
+    line-height: 300px;
+    text-align: center;
+    background: #ddd;
+}
+
+.slide-inner {
+    margin: 10px;
+    height: 100%;
 }
