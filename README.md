@@ -50,6 +50,16 @@ $('.jcarousel').jcarouselSwipe({
 });
 ```
 
+### node.js usage
+
+#####Installation
+`npm install snake-345/jcarouselSwipe`
+
+#####Usage
+```
+var jcarouselSwipe = require('jcarouselSwipe');
+```
+
 ## Examples
 You can find examples in the corresponding directory. I'm included my plugin in all jcarousel examples and added vertical carousel example.
 
