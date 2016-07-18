@@ -1,4 +1,4 @@
-/*! jсarouselSwipe - v0.3.2 - 2016-02-18
+/*! jсarouselSwipe - v0.3.4 - 2016-02-18
 * Copyright (c) 2015 Evgeniy Pelmenev; Licensed MIT */
 (function($) {
     'use strict';
