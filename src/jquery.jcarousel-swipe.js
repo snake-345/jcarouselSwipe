@@ -39,7 +39,7 @@
             var animated = false;
             var xKey = !this._instance.vertical ? 'x' : 'y';
             var yKey = !this._instance.vertical ? 'y' : 'x';
-            var minLT, lastItem;
+            var edgeLT, lastItem;
             var startTarget;
 
             this._element.on('touchstart.jcarouselSwipe mousedown.jcarouselSwipe', dragStart);
@@ -78,10 +78,19 @@
                         self._currentLT = self._getListPosition();
                         itemsOption = self._instance.options('items');
                         lastItem = ($.isFunction(itemsOption) ? itemsOption.call(self._instance) : self._instance.list().find(itemsOption)).last();
-                        minLT = (lastItem.position()[self._instance.lt] + self._instance.dimension(lastItem) - self._instance.clipping()) * -1;
+                        edgeLT = self._instance.rtl && !self._instance.vertical ?
+                            (self._instance.dimension(self._instance.list()) - lastItem.position()[self._instance.lt] - self._instance.clipping()) :
+                            (lastItem.position()[self._instance.lt] + self._instance.dimension(lastItem) - self._instance.clipping()) * -1;
                     }
 
-                    newLT = self._instance._options.wrap === 'circular' ? self._currentLT - delta : Math.min(0, Math.max(self._currentLT - delta, minLT));
+                    if (self._instance._options.wrap === 'circular') {
+                        newLT = self._currentLT - delta;
+                    } else if (self._instance.rtl && !self._instance.vertical) {
+                        newLT = Math.max(0, Math.min(self._currentLT - delta, edgeLT));
+                    } else {
+                        newLT = Math.min(0, Math.max(self._currentLT - delta, edgeLT));
+                    }
+
 
                     self._setListPosition(newLT + 'px');
                 }
@@ -149,20 +158,28 @@
                 }
             }
         },
-        _getNewTarget: function(isSwipeToNext) {
+        _getNewTarget: function(isSwipeToLT) {
             var target = this._instance.target();
             var staticTarget = this._instance.index(target);
             var relativeTarget = 0;
+            var isToNext = this._instance.rtl && !this._instance.vertical ? !isSwipeToLT : isSwipeToLT;
+            var offsetDiff;
 
             if (this._options.draggable) {
                 while(true) {
+                    if (this._instance.rtl && !this._instance.vertical) {
+                        offsetDiff = (target.offset()[this._instance.lt] + this._instance.dimension(target)) - (this._carouselOffset + this._instance.clipping());
+                    } else {
+                        offsetDiff = target.offset()[this._instance.lt] - this._carouselOffset;
+                    }
+
                     if (!target.length ||
-                        isSwipeToNext && target.offset()[this._instance.lt] - this._carouselOffset >= 0 ||
-                        !isSwipeToNext && target.offset()[this._instance.lt] - this._carouselOffset <= 0) {
+                        isSwipeToLT && offsetDiff >= 0 ||
+                        !isSwipeToLT && offsetDiff <= 0) {
                         break;
                     }
 
-                    if (isSwipeToNext) {
+                    if (isToNext) {
                         target = target.next();
                         if (!target.length) break;
                         staticTarget = staticTarget + 1;
@@ -175,11 +192,11 @@
                     relativeTarget++;
                 }
             } else {
-                staticTarget = isSwipeToNext ? staticTarget + 1 : staticTarget - 1;
+                staticTarget = isToNext ? staticTarget + 1 : staticTarget - 1;
                 relativeTarget = 1;
             }
 
-            if (isSwipeToNext) {
+            if (isToNext) {
                 staticTarget = staticTarget + Math.abs(relativeTarget - this._options.perSwipe * Math.ceil(relativeTarget / this._options.perSwipe));
             } else {
                 staticTarget = staticTarget - Math.abs(relativeTarget - this._options.perSwipe * Math.ceil(relativeTarget / this._options.perSwipe));
@@ -198,11 +215,18 @@
 
             return {
                 static: staticTarget,
-                relative: (isSwipeToNext ? '+' : '-') + '=' + relativeTarget
+                relative: (isToNext ? '+' : '-') + '=' + relativeTarget
             };
         },
         _getListPosition: function() {
-            return this._instance.list().position()[this._instance.lt];
+            var list = this._instance.list();
+            var position = list.position();
+
+            if (this._instance.rtl) {
+                position.left = list.width() + position.left - this._carousel.width();
+            }
+
+            return position[this._instance.lt];
         },
         _setListPosition: function(position) {
             var option       = this._instance.options('transitions');
@@ -254,7 +278,7 @@
                     }
                 }
 
-                lt = Math.min(lt, - wh) + 'px';
+                lt = (inst.rtl ? Math.max(lt, wh) : Math.min(lt, - wh)) + 'px';
                 inst._items.first().before(clonesBefore.reverse());
                 moveObj[inst.lt] = lt;
                 inst.move(moveObj);
@@ -281,7 +305,7 @@
             var removeCLonesWidth;
             var moveObj = {};
             this._instance.list().find('[data-jcarousel-clone]').remove();
-            removeCLonesWidth = Math.abs(this._instance.first().position()[this._instance.lt] - startPosition);
+            removeCLonesWidth = startPosition - this._instance.first().position()[this._instance.lt];
             if (removeCLonesWidth) {
                 moveObj[this._instance.lt] = this._getListPosition() + removeCLonesWidth + 'px';
                 this._instance.move(moveObj);
