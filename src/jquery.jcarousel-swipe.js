@@ -99,7 +99,9 @@
             function dragEnd(event) {
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
-                if (started || (!self._options.draggable && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10)) {
+                var xDiff = Math.abs(startTouch[xKey] - currentTouch[xKey]);
+                var yDiff = Math.abs(startTouch[yKey] - currentTouch[yKey]);
+                if (started || (!self._options.draggable && xDiff > 10 && xDiff > yDiff)) {
                     var newTarget = self._getNewTarget(startTouch[xKey] - currentTouch[xKey] > 0);
                     newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
 
