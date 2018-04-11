@@ -64,12 +64,15 @@
                     event.preventDefault();
                 }
 
-                if (Math.abs(startTouch[yKey] - currentTouch[yKey]) > 10 && !started) {
+				var xDiff = Math.abs(startTouch[xKey] - currentTouch[xKey]);
+				var yDiff = Math.abs(startTouch[yKey] - currentTouch[yKey]);
+				
+                if (yDiff > 10 && yDiff > xDiff && !started) {
                     $(document).off('touchmove.jcarouselSwipe mousemove.jcarouselSwipe');
                     return;
                 }
 
-                if (!animated && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10) {
+                if (!animated && xDiff > 10 && xDiff > yDiff) {
                     delta = startTouch[xKey] - currentTouch[xKey];
 
                     if (!started) {
