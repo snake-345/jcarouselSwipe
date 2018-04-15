@@ -59,17 +59,19 @@
                 var delta, newLT, itemsOption;
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
+                var xDiff = Math.abs(startTouch[xKey] - currentTouch[xKey]);
+                var yDiff = Math.abs(startTouch[yKey] - currentTouch[yKey]);
 
                 if (started) {
                     event.preventDefault();
                 }
 
-                if (Math.abs(startTouch[yKey] - currentTouch[yKey]) > 10 && !started) {
+                if (yDiff > 10 && yDiff > xDiff && !started) {
                     $(document).off('touchmove.jcarouselSwipe mousemove.jcarouselSwipe');
                     return;
                 }
 
-                if (!animated && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10) {
+                if (!animated && xDiff > 10 || started) {
                     delta = startTouch[xKey] - currentTouch[xKey];
 
                     if (!started) {
@@ -99,7 +101,10 @@
             function dragEnd(event) {
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
-                if (started || (!self._options.draggable && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10)) {
+                var xDiff = Math.abs(startTouch[xKey] - currentTouch[xKey]);
+                var yDiff = Math.abs(startTouch[yKey] - currentTouch[yKey]);
+
+                if (started || (!self._options.draggable && xDiff > 10 && xDiff > yDiff)) {
                     var newTarget = self._getNewTarget(startTouch[xKey] - currentTouch[xKey] > 0);
                     newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
 
