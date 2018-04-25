@@ -36,7 +36,6 @@
             var startTouch = {};
             var currentTouch = {};
             var started = false;
-            var animated = false;
             var xKey = !this._instance.vertical ? 'x' : 'y';
             var yKey = !this._instance.vertical ? 'y' : 'x';
             var edgeLT, lastItem;
@@ -49,7 +48,7 @@
                 startTouch = getTouches(event);
                 startTarget = event.target || event.srcElement;
 
-                if (self._options.draggable) {
+                if (self._options.draggable && !self._instance.animating) {
                     $(document).on('touchmove.jcarouselSwipe mousemove.jcarouselSwipe', dragMove);
                 }
                 $(document).on('touchend.jcarouselSwipe touchcancel.jcarouselSwipe mouseup.jcarouselSwipe', dragEnd);
@@ -59,17 +58,19 @@
                 var delta, newLT, itemsOption;
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
+                var xDiff = Math.abs(startTouch[xKey] - currentTouch[xKey]);
+                var yDiff = Math.abs(startTouch[yKey] - currentTouch[yKey]);
 
                 if (started) {
                     event.preventDefault();
                 }
 
-                if (Math.abs(startTouch[yKey] - currentTouch[yKey]) > 10 && !started) {
+                if (yDiff > 10 && yDiff > xDiff && !started) {
                     $(document).off('touchmove.jcarouselSwipe mousemove.jcarouselSwipe');
                     return;
                 }
 
-                if (!animated && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10) {
+                if (!self._instance.animating && xDiff > 10 || started) {
                     delta = startTouch[xKey] - currentTouch[xKey];
 
                     if (!started) {
@@ -99,7 +100,10 @@
             function dragEnd(event) {
                 event = event.originalEvent || event || window.event;
                 currentTouch = getTouches(event);
-                if (started || (!self._options.draggable && Math.abs(startTouch[xKey] - currentTouch[xKey]) > 10)) {
+                var xDiff = Math.abs(startTouch[xKey] - currentTouch[xKey]);
+                var yDiff = Math.abs(startTouch[yKey] - currentTouch[yKey]);
+
+                if (started || (!self._options.draggable && xDiff > 10 && xDiff > yDiff)) {
                     var newTarget = self._getNewTarget(startTouch[xKey] - currentTouch[xKey] > 0);
                     newTarget = self._instance._options.wrap === 'circular' ? newTarget.relative : newTarget.static;
 
@@ -116,10 +120,9 @@
                         self._removeClones();
                         self._instance._items = null;
                     }
-                    animated = true;
+
+                    started = false;
                     self._instance[self._options.method](newTarget, function() {
-                        started = false;
-                        animated = false;
                         if (self._instance._options.wrap !== 'circular') {
                             self._removeClones();
                             self._instance._items = null;

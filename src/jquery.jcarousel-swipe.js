@@ -36,7 +36,6 @@
             var startTouch = {};
             var currentTouch = {};
             var started = false;
-            var animated = false;
             var xKey = !this._instance.vertical ? 'x' : 'y';
             var yKey = !this._instance.vertical ? 'y' : 'x';
             var edgeLT, lastItem;
@@ -49,7 +48,7 @@
                 startTouch = getTouches(event);
                 startTarget = event.target || event.srcElement;
 
-                if (self._options.draggable) {
+                if (self._options.draggable && !self._instance.animating) {
                     $(document).on('touchmove.jcarouselSwipe mousemove.jcarouselSwipe', dragMove);
                 }
                 $(document).on('touchend.jcarouselSwipe touchcancel.jcarouselSwipe mouseup.jcarouselSwipe', dragEnd);
@@ -71,7 +70,7 @@
                     return;
                 }
 
-                if (!animated && xDiff > 10 || started) {
+                if (!self._instance.animating && xDiff > 10 || started) {
                     delta = startTouch[xKey] - currentTouch[xKey];
 
                     if (!started) {
@@ -121,10 +120,9 @@
                         self._removeClones();
                         self._instance._items = null;
                     }
-                    animated = true;
+
+                    started = false;
                     self._instance[self._options.method](newTarget, function() {
-                        started = false;
-                        animated = false;
                         if (self._instance._options.wrap !== 'circular') {
                             self._removeClones();
                             self._instance._items = null;
